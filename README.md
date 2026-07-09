@@ -2,7 +2,7 @@
 
 Aplikasi pencatat pengeluaran harian. Input lewat **WhatsApp** atau **Web Dashboard**.
 
-Built with Laravel 13 + PostgreSQL.
+Built with Laravel 13 + SQLite.
 
 ## Fitur
 
@@ -18,7 +18,7 @@ Built with Laravel 13 + PostgreSQL.
 composer install
 cp .env.example .env
 php artisan key:generate
-# Setup PostgreSQL / SQLite
+touch database/database.sqlite
 php artisan migrate --seed
 php artisan serve
 ```
@@ -27,38 +27,48 @@ Buka `http://localhost:8000`
 
 ## WhatsApp Integration
 
-Detail lengkap: [`WA_SETUP.md`](WA_SETUP.md)
+Detail: [`WA_SETUP.md`](WA_SETUP.md)
 
-## Deploy ke Render (Free, No CC)
+## Deploy ke Railway
 
 ### 1. Push ke GitHub
 
 ```bash
-git init
 git add .
 git commit -m "init"
-git remote add origin https://github.com/pajarr2/pengeluaran-harian.git
-git push -u origin main
+git push
 ```
 
-### 2. Deploy di Render
+### 2. Deploy
 
-1. Buka https://dashboard.render.com → **New +** → **Blueprint**
+1. Buka https://railway.app → **New Project** → **Deploy from GitHub repo**
 2. Pilih repo `pengeluaran-harian`
-3. Render auto-detect `render.yaml` → bikin Web Service + PostgreSQL
-4. Klik **Apply**
 
-### 3. Selesai
+### 3. Set Environment Variables
 
-- Render generate `APP_KEY` otomatis
-- PostgreSQL 1GB gratis otomatis kebikin
-- Domain: `https://pengeluaran-harian.onrender.com`
+Di dashboard Railway project → **Variables**:
 
-**Catatan:** Free tier Render **spin down** setelah 15 menit idle. Request pertama setelah idle lambat ~5-10 detik. Untuk WA webhook, ini artinya mungkin timeout — tapi buat coba-coba gak masalah. Upgrade ke paid ($7/bulan) biar selalu nyala.
+| Variable | Value |
+|----------|-------|
+| `APP_KEY` | `base64:...` (generate: `php artisan key:generate --show`) |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `DB_CONNECTION` | `sqlite` |
+| `DB_DATABASE` | `/data/database.sqlite` |
 
-### 4. Setup WhatsApp (optional)
+### 4. Bikin Volume (biar data gak ilang)
 
-Set env vars di Render dashboard:
+Dashboard → **Volumes** → **New Volume**
+- **Mount Path:** `/data`
+- **Size:** 1 GB (free)
+
+### 5. Redeploy
+
+Klik **Deploy** → tunggu build selesai.
+
+### 6. WhatsApp (optional)
+
+Tambah env vars:
 
 | Variable | Value |
 |----------|-------|
@@ -66,14 +76,14 @@ Set env vars di Render dashboard:
 | `WHATSAPP_ACCESS_TOKEN` | dari Meta |
 | `WHATSAPP_PHONE_NUMBER_ID` | dari Meta |
 
-Webhook URL: `https://pengeluaran-harian.onrender.com/api/whatsapp/webhook`
+Webhook URL: `https://namaproject.railway.app/api/whatsapp/webhook`
 
 ## Stack
 
 | Layer | Tech |
 |-------|------|
 | Backend | Laravel 13 |
-| Database | PostgreSQL 16 |
+| Database | SQLite (Railway Volume) |
 | Frontend | Blade + Tailwind CSS + Chart.js |
 | WhatsApp | Meta Cloud API (webhook) |
-| Deploy | Render (Docker) |
+| Deploy | Railway (Nixpacks) |
