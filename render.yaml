@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: pengeluaran-harian
+    runtime: docker
+    repo: https://github.com/pajarr2/pengeluaran-harian
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://pengeluaran-harian.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: pengeluaran-harian-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: pengeluaran-harian-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: pengeluaran-harian-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: pengeluaran-harian-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: pengeluaran-harian-db
+          property: password
+
+databases:
+  - name: pengeluaran-harian-db
+    plan: free
+    databaseName: pengeluaran_harian
