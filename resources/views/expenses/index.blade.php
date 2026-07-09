@@ -44,7 +44,8 @@
         </form>
     </div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    {{-- Desktop table --}}
+    <div class="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b">
                 <tr>
@@ -83,6 +84,41 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile cards --}}
+    <div class="md:hidden space-y-3">
+        @forelse ($expenses as $e)
+            <div class="bg-white rounded-lg shadow p-4 border-l-4" style="border-left-color: {{ $e->category->color ?? '#d1d5db' }}">
+                <div class="flex items-start justify-between mb-1">
+                    <div class="flex items-center gap-1.5">
+                        <span>{{ $e->category->emoji ?? '📌' }}</span>
+                        <span class="font-medium text-sm">{{ $e->category->name }}</span>
+                    </div>
+                    <span class="text-xs px-1.5 py-0.5 rounded {{ $e->source === 'whatsapp' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }}">
+                        {{ $e->source === 'whatsapp' ? 'WA' : 'Web' }}
+                    </span>
+                </div>
+                <div class="flex items-end justify-between">
+                    <div>
+                        <p class="text-lg font-bold">Rp {{ number_format($e->amount, 0, ',', '.') }}</p>
+                        @if ($e->description)
+                            <p class="text-xs text-gray-500">{{ $e->description }}</p>
+                        @endif
+                        <p class="text-xs text-gray-400 mt-0.5">{{ $e->date->format('d M Y') }}</p>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                        <a href="{{ route('expenses.edit', $e) }}" class="text-blue-600">Edit</a>
+                        <form method="POST" action="{{ route('expenses.destroy', $e) }}" onsubmit="return confirm('Hapus?')">
+                            @csrf @method('DELETE')
+                            <button class="text-red-600">Hapus</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <p class="text-center text-gray-400 py-8">Belum ada pengeluaran.</p>
+        @endforelse
     </div>
 
     <div class="mt-4">

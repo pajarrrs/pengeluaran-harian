@@ -2,9 +2,9 @@
 @section('title', 'Dashboard')
 
 @section('content')
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h1 class="text-2xl font-bold">Dashboard</h1>
-        <form method="GET" class="flex gap-2 items-center">
+        <form method="GET" class="flex flex-wrap gap-2 items-center">
             <select name="month" class="border rounded px-2 py-1 text-sm">
                 @foreach (range(1, 12) as $m)
                     <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>{{ DateTime::createFromFormat('!m', $m)->format('F') }}</option>
@@ -76,14 +76,14 @@
         <h2 class="font-semibold mb-3">Transaksi Terbaru</h2>
         @forelse ($recentExpenses as $e)
             <div class="flex items-center justify-between py-2 border-b last:border-0 text-sm">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 min-w-0">
                     <span>{{ $e->category->emoji ?? '📌' }}</span>
-                    <span>{{ $e->category->name }}</span>
+                    <span class="truncate">{{ $e->category->name }}</span>
                     @if ($e->description)
-                        <span class="text-gray-400">— {{ $e->description }}</span>
+                        <span class="text-gray-400 truncate hidden sm:inline">— {{ $e->description }}</span>
                     @endif
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 shrink-0">
                     <span class="font-medium">Rp {{ number_format($e->amount, 0, ',', '.') }}</span>
                     <span class="text-xs {{ $e->source === 'whatsapp' ? 'text-green-500' : 'text-blue-500' }}">{{ $e->source === 'whatsapp' ? 'WA' : 'Web' }}</span>
                 </div>
