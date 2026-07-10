@@ -3,7 +3,7 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "touch /app/database/database.sqlite && php artisan migrate --force && php -S 0.0.0.0:${PORT:-8080} -t public /app/router.php",
+    "startCommand": "mkdir -p /data && touch /data/database.sqlite && php artisan migrate --force && php -S 0.0.0.0:${PORT:-8080} -t public /app/router.php",
     "healthcheckPath": "/up",
     "restartPolicyType": "always"
   }
