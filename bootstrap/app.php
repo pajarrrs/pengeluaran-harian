@@ -19,8 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'access.code' => \App\Http\Middleware\AccessCode::class,
         ]);
-
-        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
