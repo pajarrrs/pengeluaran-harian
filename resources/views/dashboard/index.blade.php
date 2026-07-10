@@ -7,7 +7,7 @@
         <form method="GET" class="flex flex-wrap gap-2 items-center">
             <select name="month" class="border rounded px-2 py-1 text-sm">
                 @foreach (range(1, 12) as $m)
-                    <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>{{ DateTime::createFromFormat('!m', $m)->format('F') }}</option>
+                    <option value="{{ $m }}" {{ (int)$m === (int)$month ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                 @endforeach
             </select>
             <select name="year" class="border rounded px-2 py-1 text-sm">

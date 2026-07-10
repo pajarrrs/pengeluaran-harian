@@ -10,14 +10,20 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $month = $request->get('month', now()->month);
-        $year = $request->get('year', now()->year);
-        $dateFilter = fn($q) => $q->whereMonth('date', $month)->whereYear('date', $year);
+        $month = (int) $request->get('month', now()->month);
+        $year = (int) $request->get('year', now()->year);
+        $dateFilter = function ($q) use ($month, $year) {
+            $q->whereMonth('date', $month)->whereYear('date', $year);
+        };
 
         $total = Expense::where($dateFilter)->sum('amount');
         $count = Expense::where($dateFilter)->count();
         $daysInMonth = now()->setYear($year)->setMonth($month)->daysInMonth;
-        $avgPerDay = $count > 0 ? round($total / max(now()->day, 1)) : 0;
+        
+        $currentMonth = $month === now()->month && $year === now()->year;
+        $divider = $currentMonth ? max(now()->day, 1) : $daysInMonth;
+        $avgPerDay = $count > 0 ? round($total / $divider) : 0;
+        
         $highest = Expense::where($dateFilter)->with('category')->orderByDesc('amount')->first();
 
         $perCategory = Category::with(['expenses' => fn($q) => $q->where($dateFilter)])
