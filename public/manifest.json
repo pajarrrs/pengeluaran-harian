@@ -1,6 +1,6 @@
 {
   "name": "Pengeluaran Harian",
-  "short_name": "Catatan",
+  "short_name": "Pajar Notes",
   "description": "Aplikasi pencatat pengeluaran harian",
   "start_url": "/",
   "display": "standalone",
