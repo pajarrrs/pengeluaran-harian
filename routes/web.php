@@ -3,11 +3,13 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Middleware\AccessCode;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth', function () {
-    if (request('code') === '230205') {
-        session(['access_granted' => true]);
+    $code = request('code');
+    if (AccessCode::isValid($code)) {
+        session(['access_code' => $code]);
         session()->regenerate();
         return redirect('/');
     }
@@ -15,7 +17,7 @@ Route::post('/auth', function () {
 })->name('auth');
 
 Route::post('/logout', function () {
-    session()->forget('access_granted');
+    session()->forget('access_code');
     session()->regenerate();
     return redirect('/');
 })->name('logout');

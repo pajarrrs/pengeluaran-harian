@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akses — Pengeluaran Harian</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
@@ -13,10 +16,9 @@
             <h1 class="text-xl font-bold">Pengeluaran Harian</h1>
             <p class="text-sm text-gray-500">Masukkan kode akses</p>
         </div>
-
-        <form method="POST" action="{{ route('auth') }}" class="space-y-4">
+        <form method="POST" action="/auth" class="space-y-4">
             @csrf
-            <input type="password" name="code" placeholder="Kode akses" autofocus
+            <input type="password" name="code" placeholder="******" autofocus
                    class="w-full border rounded-lg px-4 py-3 text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500">
             @if (session('error'))
                 <p class="text-red-500 text-sm text-center">{{ session('error') }}</p>
