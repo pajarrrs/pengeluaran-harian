@@ -108,7 +108,7 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                     <span class="font-medium">Rp {{ number_format($e->amount, 0, ',', '.') }}</span>
-                    <span class="text-xs {{ $e->source === 'whatsapp' ? 'text-green-500' : 'text-blue-500' }}">{{ $e->source === 'whatsapp' ? 'WA' : 'Web' }}</span>
+                    <span class="text-xs {{ $e->source === 'whatsapp' ? 'text-green-500' : ($e->source === 'telegram' ? 'text-purple-500' : 'text-blue-500') }}">{{ $e->source === 'whatsapp' ? 'WA' : ($e->source === 'telegram' ? 'Tele' : 'Web') }}</span>
                 </div>
             </div>
         @empty

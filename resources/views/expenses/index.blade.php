@@ -65,10 +65,11 @@
                         <td class="px-4 py-3 text-gray-500">{{ $e->description ?? '-' }}</td>
                         <td class="px-4 py-3 text-right font-medium">Rp {{ number_format($e->amount, 0, ',', '.') }}</td>
                         <td class="px-4 py-3 text-center">
-                            <span class="text-xs px-2 py-0.5 rounded {{ $e->source === 'whatsapp' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }}">
-                                {{ $e->source === 'whatsapp' ? 'WA' : 'Web' }}
+                            <span class="text-xs px-2 py-0.5 rounded {{ $e->source === 'whatsapp' ? 'bg-green-100 text-green-700' : ($e->source === 'telegram' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700') }}">
+                                {{ $e->source === 'whatsapp' ? 'WA' : ($e->source === 'telegram' ? 'Tele' : 'Web') }}
                             </span>
                         </td>
+                        <td class="px-4 py-3 text-center">
                         <td class="px-4 py-3 text-center">
                             <div class="flex justify-center gap-2">
                                 <a href="{{ route('expenses.edit', $e) }}" class="text-blue-600 hover:underline text-xs">Edit</a>
@@ -95,8 +96,8 @@
                         <span>{{ $e->category->emoji ?? '📌' }}</span>
                         <span class="font-medium text-sm">{{ $e->category->name }}</span>
                     </div>
-                    <span class="text-xs px-1.5 py-0.5 rounded {{ $e->source === 'whatsapp' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }}">
-                        {{ $e->source === 'whatsapp' ? 'WA' : 'Web' }}
+                    <span class="text-xs px-1.5 py-0.5 rounded {{ $e->source === 'whatsapp' ? 'bg-green-100 text-green-700' : ($e->source === 'telegram' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700') }}">
+                        {{ $e->source === 'whatsapp' ? 'WA' : ($e->source === 'telegram' ? 'Tele' : 'Web') }}
                     </span>
                 </div>
                 <div class="flex items-end justify-between">
