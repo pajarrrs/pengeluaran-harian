@@ -9,12 +9,13 @@
 
     <div id="createForm" class="hidden bg-white rounded-lg shadow p-4 mb-6">
         <h2 class="font-semibold mb-3">Tambah Kategori</h2>
-        <form method="POST" action="{{ route('categories.store') }}" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <form method="POST" action="{{ route('categories.store') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3">
             @csrf
             <input type="text" name="name" placeholder="Nama kategori" required class="border rounded px-3 py-2 text-sm">
             <input type="text" name="emoji" placeholder="Emoji (contoh: 🍔)" class="border rounded px-3 py-2 text-sm">
             <input type="text" name="color" placeholder="Warna (contoh: #ef4444)" class="border rounded px-3 py-2 text-sm">
-            <button type="submit" class="md:col-span-3 bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700">Simpan</button>
+            <input type="number" name="budget" placeholder="Budget (Rp)" class="border rounded px-3 py-2 text-sm">
+            <button type="submit" class="md:col-span-4 bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700">Simpan</button>
         </form>
     </div>
 
@@ -23,6 +24,9 @@
             <div class="bg-white rounded-lg shadow p-4 border-t-4" style="border-top-color: {{ $c->color ?? '#d1d5db' }}">
                 <div class="text-3xl mb-2">{{ $c->emoji ?? '📌' }}</div>
                 <h3 class="font-semibold">{{ $c->name }}</h3>
+                @if ($c->budget)
+                    <p class="text-xs text-green-600 mb-1">Budget: Rp {{ number_format($c->budget, 0, ',', '.') }}</p>
+                @endif
                 <p class="text-xs text-gray-400">
                     {{ $c->expenses_count }} pengeluaran
                     @if ($c->is_default)

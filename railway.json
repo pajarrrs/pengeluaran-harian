@@ -3,7 +3,7 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "php artisan migrate --force && php -S 0.0.0.0:${PORT:-8080} -t public /app/router.php",
+    "startCommand": "php artisan migrate --force && (php artisan schedule:work & php -S 0.0.0.0:${PORT:-8080} -t public /app/router.php)",
     "healthcheckPath": "/up",
     "restartPolicyType": "always"
   }

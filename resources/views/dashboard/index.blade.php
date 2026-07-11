@@ -54,13 +54,30 @@
 
     <div class="bg-white rounded-lg shadow p-4 mb-6">
         <h2 class="font-semibold mb-3">Rincian per Kategori</h2>
+
+        @if ($budgetAlerts->isNotEmpty())
+            <div class="mb-4 space-y-2">
+                @foreach ($budgetAlerts as $cat)
+                    @php $pct = round(($cat['total'] / $cat['budget']) * 100); @endphp
+                    <div class="flex items-center gap-2 p-2 rounded text-sm {{ $pct >= 100 ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700' }}">
+                        <span>{{ $cat['emoji'] }}</span>
+                        <span class="flex-1">{{ $cat['name'] }} — Rp {{ number_format($cat['total'], 0, ',', '.') }} / Rp {{ number_format($cat['budget'], 0, ',', '.') }} ({{ $pct }}%)</span>
+                        <span>{{ $pct >= 100 ? '⚠️ Over budget!' : '🔔 Hampir habis' }}</span>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         @forelse ($perCategory as $cat)
             @if ($cat['total'] > 0)
-                <div class="flex items-center justify-between py-2 border-b last:border-0">
-                    <div class="flex items-center gap-2">
-                        <span>{{ $cat['emoji'] }}</span>
-                        <span>{{ $cat['name'] }}</span>
-                    </div>
+                    <div class="flex items-center justify-between py-2 border-b last:border-0">
+                        <div class="flex items-center gap-2">
+                            <span>{{ $cat['emoji'] }}</span>
+                            <span>{{ $cat['name'] }}</span>
+                            @if ($cat['budget'])
+                                <span class="text-xs text-gray-400">({{ round(($cat['total'] / max($cat['budget'], 1)) * 100) }}% budget)</span>
+                            @endif
+                        </div>
                     <div class="flex items-center gap-2">
                         <span class="font-medium">Rp {{ number_format($cat['total'], 0, ',', '.') }}</span>
                         <span style="background: {{ $cat['color'] }}" class="w-3 h-3 rounded-full inline-block"></span>

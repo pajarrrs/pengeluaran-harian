@@ -52,7 +52,24 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW init failed', err));
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    if ('PushManager' in window) {
+                        Notification.requestPermission().then(perm => {
+                            if (perm === 'granted') {
+                                reg.pushManager.subscribe({
+                                    userVisibleOnly: true,
+                                    applicationServerKey: '{{ env("VAPID_PUBLIC_KEY") }}',
+                                }).then(sub => {
+                                    fetch('/api/push/subscribe', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                        body: JSON.stringify(sub.toJSON()),
+                                    });
+                                }).catch(() => {});
+                            }
+                        });
+                    }
+                }).catch(err => console.error('SW init failed', err));
             });
         }
     </script>

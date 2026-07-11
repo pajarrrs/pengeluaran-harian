@@ -19,6 +19,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100|unique:categories,name',
             'emoji' => 'nullable|string|max:10',
             'color' => 'nullable|string|max:7',
+            'budget' => 'nullable|integer|min:0',
         ]);
 
         Category::create($validated);
@@ -37,6 +38,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
             'emoji' => 'nullable|string|max:10',
             'color' => 'nullable|string|max:7',
+            'budget' => 'nullable|integer|min:0',
         ]);
 
         $category->update($validated);

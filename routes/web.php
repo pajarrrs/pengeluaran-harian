@@ -31,4 +31,6 @@ Route::middleware('access.code')->group(function () {
 Route::prefix('api')->group(function () {
     Route::get('/whatsapp/webhook', [App\Http\Controllers\WhatsAppController::class, 'verify']);
     Route::post('/whatsapp/webhook', [App\Http\Controllers\WhatsAppController::class, 'receive']);
+    Route::post('/telegram/webhook', [App\Http\Controllers\TelegramController::class, 'webhook']);
+    Route::post('/push/subscribe', [App\Http\Controllers\PushController::class, 'subscribe']);
 });

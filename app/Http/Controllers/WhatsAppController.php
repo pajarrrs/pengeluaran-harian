@@ -5,18 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\PendingInput;
-use App\Services\MessageParser;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppController extends Controller
 {
     protected MessageParser $parser;
+    protected WhatsAppService $wa;
 
-    public function __construct(MessageParser $parser)
+    public function __construct(MessageParser $parser, WhatsAppService $wa)
     {
         $this->parser = $parser;
+        $this->wa = $wa;
     }
 
     // Meta webhook verification (GET)
@@ -60,6 +61,13 @@ class WhatsAppController extends Controller
 
     protected function handleMessage(string $waId, string $text, string $phoneNumberId): void
     {
+        // Check for commands first
+        $cmd = $this->wa->handleCommand($waId, $text);
+        if ($cmd) {
+            $this->wa->sendMessage($phoneNumberId, $waId, $cmd['message']);
+            return;
+        }
+
         $pending = PendingInput::where('wa_id', $waId)->latest()->first();
 
         // Check if user has a pending input
@@ -81,9 +89,9 @@ class WhatsAppController extends Controller
                     'category_name' => $category->name,
                     'step' => 'awaiting_amount',
                 ]);
-                $this->reply($phoneNumberId, $waId, "Berapa jumlah untuk {$category->emoji} {$category->name}?");
+                $this->wa->sendMessage($phoneNumberId, $waId, "Berapa jumlah untuk {$category->emoji} {$category->name}?");
             } else {
-                $this->reply($phoneNumberId, $waId, "Gak nemu kategori \"{$text}\". Ketik jumlah aja dulu, nanti gw tanya kategorinya.\n\nContoh: *50000 makan siang*");
+                $this->wa->sendMessage($phoneNumberId, $waId, "Gak nemu kategori \"{$text}\". Ketik jumlah aja dulu, nanti gw tanya kategorinya.\n\nContoh: *50000 makan siang*");
             }
             return;
         }
@@ -98,7 +106,7 @@ class WhatsAppController extends Controller
             ]);
 
             $categoryList = Category::all()->map(fn($c) => "{$c->emoji} {$c->name}")->join(', ');
-            $this->reply($phoneNumberId, $waId, "Rp " . number_format($parsed['amount'], 0, ',', '.') . " — mau dikategorikan apa?\n\n{$categoryList}");
+            $this->wa->sendMessage($phoneNumberId, $waId, "Rp " . number_format($parsed['amount'], 0, ',', '.') . " — mau dikategorikan apa?\n\n{$categoryList}");
             return;
         }
 
@@ -114,7 +122,7 @@ class WhatsAppController extends Controller
 
             if (!$categoryName) {
                 $categoryList = Category::all()->map(fn($c) => "{$c->emoji} {$c->name}")->join(', ');
-                $this->reply($phoneNumberId, $waId, "Kategori \"{$text}\" gak ditemukan. Pilih salah satu:\n{$categoryList}");
+                $this->wa->sendMessage($phoneNumberId, $waId, "Kategori \"{$text}\" gak ditemukan. Pilih salah satu:\n{$categoryList}");
                 return;
             }
 
@@ -142,7 +150,7 @@ class WhatsAppController extends Controller
             $amount = $parsed['amount'];
 
             if (!$amount) {
-                $this->reply($phoneNumberId, $waId, "Masukin jumlahnya dulu ya, contoh: *25000*");
+                $this->wa->sendMessage($phoneNumberId, $waId, "Masukin jumlahnya dulu ya, contoh: *25000*");
                 return;
             }
 
@@ -157,7 +165,7 @@ class WhatsAppController extends Controller
         $category = Category::where('name', $categoryName)->first();
 
         if (!$category) {
-            $this->reply($phoneNumberId, $waId, "Kategori \"{$categoryName}\" gak ditemukan.");
+            $this->wa->sendMessage($phoneNumberId, $waId, "Kategori \"{$categoryName}\" gak ditemukan.");
             return;
         }
 
@@ -167,6 +175,7 @@ class WhatsAppController extends Controller
             'description' => $description,
             'date' => now()->toDateString(),
             'source' => 'whatsapp',
+            'wa_id' => $waId,
         ]);
 
         $msg = "✅ Berhasil dicatat!\n{$category->emoji} {$category->name}: Rp " . number_format($amount, 0, ',', '.');
@@ -174,32 +183,6 @@ class WhatsAppController extends Controller
             $msg .= "\n📝 {$description}";
         }
 
-        $this->reply($phoneNumberId, $waId, $msg);
-    }
-
-    protected function reply(string $phoneNumberId, string $waId, string $message): void
-    {
-        $token = config('services.whatsapp.access_token');
-        $apiUrl = "https://graph.facebook.com/v18.0/{$phoneNumberId}/messages";
-
-        if (empty($token) || empty($phoneNumberId)) {
-            Log::info('WhatsApp reply skipped (not configured)', [
-                'to' => $waId,
-                'message' => $message,
-            ]);
-            return;
-        }
-
-        try {
-            Http::withToken($token)
-                ->post($apiUrl, [
-                    'messaging_product' => 'whatsapp',
-                    'to' => $waId,
-                    'type' => 'text',
-                    'text' => ['body' => $message],
-                ]);
-        } catch (\Exception $e) {
-            Log::error('WhatsApp reply failed', ['error' => $e->getMessage()]);
-        }
+        $this->wa->sendMessage($phoneNumberId, $waId, $msg);
     }
 }

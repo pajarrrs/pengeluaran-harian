@@ -23,6 +23,11 @@
                 <input type="text" name="color" value="{{ $category->color }}" class="w-full border rounded px-3 py-2 text-sm">
             </div>
 
+            <div>
+                <label class="block text-sm font-medium mb-1">Budget (Rp)</label>
+                <input type="number" name="budget" value="{{ $category->budget }}" class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+
             <div class="flex gap-3">
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Simpan</button>
                 <a href="{{ route('categories.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300">Batal</a>

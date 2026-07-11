@@ -32,12 +32,15 @@ class DashboardController extends Controller
                 'name' => $c->name,
                 'emoji' => $c->emoji,
                 'color' => $c->color,
+                'budget' => $c->budget,
                 'total' => $c->expenses->sum('amount'),
             ]);
 
         $chartLabels = $perCategory->pluck('name');
         $chartData = $perCategory->pluck('total');
         $chartColors = $perCategory->pluck('color');
+        $budgetAlerts = $perCategory->filter(fn($c) => $c['budget'] && $c['total'] >= $c['budget'] * 0.8)
+            ->values();
 
         $recentExpenses = Expense::with('category')
             ->where($dateFilter)
@@ -49,7 +52,7 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'total', 'count', 'perCategory', 'avgPerDay', 'highest',
             'chartLabels', 'chartData', 'chartColors',
-            'month', 'year', 'recentExpenses'
+            'month', 'year', 'recentExpenses', 'budgetAlerts'
         ));
     }
 }
