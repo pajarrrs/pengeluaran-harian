@@ -4,19 +4,25 @@
 @section('content')
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h1 class="text-2xl font-bold">Dashboard</h1>
-        <form method="GET" class="flex flex-wrap gap-2 items-center">
-            <select name="month" class="border rounded px-2 py-1 text-sm">
-                @foreach (range(1, 12) as $m)
-                    <option value="{{ $m }}" {{ (int)$m === (int)$month ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
-                @endforeach
-            </select>
-            <select name="year" class="border rounded px-2 py-1 text-sm">
-                @foreach (range(now()->year - 2, now()->year + 1) as $y)
-                    <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
-                @endforeach
-            </select>
-            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Filter</button>
-        </form>
+        <div class="flex flex-wrap gap-2 items-center">
+            <form method="GET" class="flex flex-wrap gap-2 items-center">
+                <select name="month" class="border rounded px-2 py-1 text-sm">
+                    @foreach (range(1, 12) as $m)
+                        <option value="{{ $m }}" {{ (int)$m === (int)$month ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
+                    @endforeach
+                </select>
+                <select name="year" class="border rounded px-2 py-1 text-sm">
+                    @foreach (range(now()->year - 2, now()->year + 1) as $y)
+                        <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Filter</button>
+            </form>
+            <form method="POST" action="{{ route('push.test') }}">
+                @csrf
+                <button type="submit" class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">🔔 Test Push</button>
+            </form>
+        </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

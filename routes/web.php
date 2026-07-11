@@ -26,6 +26,7 @@ Route::middleware('access.code')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('expenses', ExpenseController::class);
     Route::resource('categories', CategoryController::class);
+    Route::post('/push/test', [App\Http\Controllers\PushController::class, 'test'])->name('push.test');
 });
 
 Route::prefix('api')->group(function () {
