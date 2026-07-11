@@ -169,7 +169,7 @@ class WhatsAppController extends Controller
             return;
         }
 
-        Expense::create([
+        $expense = Expense::create([
             'category_id' => $category->id,
             'amount' => $amount,
             'description' => $description,
@@ -177,6 +177,8 @@ class WhatsAppController extends Controller
             'source' => 'whatsapp',
             'wa_id' => $waId,
         ]);
+
+        app(\App\Services\PushNotificationService::class)->sendToAll('💰 Pengeluaran Baru (WA)', "{$category->emoji} {$category->name}: Rp " . number_format($amount, 0, ',', '.') . ($description ? "\n{$description}" : ''));
 
         $msg = "✅ Berhasil dicatat!\n{$category->emoji} {$category->name}: Rp " . number_format($amount, 0, ',', '.');
         if ($description) {

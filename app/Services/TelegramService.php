@@ -5,16 +5,19 @@ namespace App\Services;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\PendingInput;
+use App\Services\PushNotificationService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TelegramService
 {
     private string $token;
+    private ?PushNotificationService $push;
 
     public function __construct()
     {
         $this->token = config('services.telegram.bot_token');
+        $this->push = app(PushNotificationService::class);
     }
 
     public function setWebhook(string $url): bool
@@ -157,6 +160,8 @@ class TelegramService
             'source' => 'telegram',
             'wa_id' => $textId,
         ]);
+
+        $this->push->sendToAll('💰 Pengeluaran Baru (Telegram)', "{$category->emoji} {$category->name}: Rp " . number_format($amount, 0, ',', '.') . ($description ? "\n{$description}" : ''));
 
         $msg = "✅ Berhasil dicatat!\n{$category->emoji} {$category->name}: Rp " . number_format($amount, 0, ',', '.');
         if ($description) $msg .= "\n📝 {$description}";
