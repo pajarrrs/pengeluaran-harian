@@ -14,10 +14,10 @@ class SendDailySummary extends Command
 
     public function handle(WhatsAppService $wa)
     {
-        $email = config('mail.from.address');
+        $email = env('NOTIFICATION_EMAIL');
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->error('MAIL_FROM_ADDRESS not configured.');
+            $this->error('NOTIFICATION_EMAIL not configured.');
             return 1;
         }
 
