@@ -14,25 +14,26 @@ class DashboardController extends Controller
         $endDate = $request->get('end_date');
         $month = (int) $request->get('month', now()->month);
         $year = (int) $request->get('year', now()->year);
+        $categoryId = $request->get('category_id');
         $userCode = session('access_code');
-        $dateFilter = function ($q) use ($startDate, $endDate, $month, $year, $userCode) {
+
+        $dateFilter = function ($q) use ($startDate, $endDate, $month, $year, $userCode, $categoryId) {
             if ($startDate && $endDate) {
                 $q->whereBetween('date', [$startDate, $endDate]);
             } else {
                 $q->whereMonth('date', $month)->whereYear('date', $year);
             }
             if ($userCode) $q->where(fn($q) => $q->where('user_code', $userCode)->orWhereNull('user_code'));
+            if ($categoryId) $q->where('category_id', $categoryId);
         };
 
         $total = Expense::where($dateFilter)->sum('amount');
         $count = Expense::where($dateFilter)->count();
         $daysInMonth = now()->setYear($year)->setMonth($month)->daysInMonth;
-        
+
         $currentMonth = !$startDate && $month === now()->month && $year === now()->year;
         $divider = $currentMonth ? max(now()->day, 1) : $daysInMonth;
         $avgPerDay = $count > 0 ? round($total / $divider) : 0;
-        
-        $highest = Expense::where($dateFilter)->with('category')->orderByDesc('amount')->first();
 
         $perCategory = Category::with(['expenses' => fn($q) => $q->where($dateFilter)])
             ->get()
@@ -72,12 +73,30 @@ class DashboardController extends Controller
         $weekTotal = (clone $weekQuery)->sum('amount');
         $weekCount = (clone $weekQuery)->count();
 
+        $weeklyLabels = [];
+        $weeklyData = [];
+        for ($i = 3; $i >= 0; $i--) {
+            $start = now()->subWeeks($i)->startOfWeek()->toDateString();
+            $end = now()->subWeeks($i)->endOfWeek()->toDateString();
+            $weeklyLabels[] = 'Minggu ' . now()->subWeeks($i)->weekOfYear;
+            $q = Expense::whereBetween('date', [$start, $end])
+                ->when($userCode, fn($q) => $q->where(fn($q) => $q->where('user_code', $userCode)->orWhereNull('user_code')));
+            if ($categoryId) $q->where('category_id', $categoryId);
+            $weeklyData[] = (int) (clone $q)->sum('amount');
+        }
+
+        $categories = Category::orderBy('name')->get();
+
         return view('dashboard.index', compact(
-            'total', 'count', 'perCategory', 'avgPerDay', 'highest',
+            'total', 'count', 'perCategory', 'avgPerDay',
             'chartLabels', 'chartData', 'chartColors',
-            'month', 'year', 'recentExpenses', 'budgetAlerts',
-            'startDate', 'endDate', 'todayExpenses', 'todayTotal', 'todayCount',
-            'weekTotal', 'weekCount'
+            'month', 'year',
+            'recentExpenses', 'budgetAlerts',
+            'startDate', 'endDate',
+            'todayExpenses', 'todayTotal', 'todayCount',
+            'weekTotal', 'weekCount',
+            'weeklyLabels', 'weeklyData',
+            'categories', 'categoryId',
         ));
     }
 }

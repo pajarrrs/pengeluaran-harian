@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Services\PushNotificationService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
@@ -48,11 +49,21 @@ class ExpenseController extends Controller
             'amount' => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
             'date' => 'nullable|date',
+            'is_recurring' => 'nullable|boolean',
+            'recurring_interval' => 'nullable|required_if:is_recurring,1|integer|min:1|max:365',
         ]);
 
         $validated['date'] ??= now()->toDateString();
         $validated['source'] = 'web';
         $validated['user_code'] = session('access_code');
+
+        $isRecurring = $validated['is_recurring'] ?? false;
+        unset($validated['is_recurring']);
+        if ($isRecurring) {
+            $validated['is_recurring'] = true;
+            $interval = $validated['recurring_interval'];
+            $validated['next_date'] = now()->parse($validated['date'])->addDays($interval)->toDateString();
+        }
 
         $expense = Expense::create($validated);
 
@@ -84,6 +95,17 @@ class ExpenseController extends Controller
         return redirect()->route('expenses.index')->with('success', 'Pengeluaran berhasil diubah.');
     }
 
+    public function inlineUpdate(Request $request, Expense $expense)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|integer|min:1',
+        ]);
+
+        $expense->update(['amount' => $validated['amount']]);
+
+        return response()->json(['success' => true, 'amount' => number_format($expense->amount, 0, ',', '.')]);
+    }
+
     public function destroy(Expense $expense)
     {
         $expense->delete();
@@ -91,7 +113,7 @@ class ExpenseController extends Controller
         return redirect()->back()->with('success', 'Pengeluaran berhasil dihapus.');
     }
 
-    public function exportCsv(Request $request)
+    public function exportPdf(Request $request)
     {
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
@@ -107,26 +129,56 @@ class ExpenseController extends Controller
         }
         if ($userCode) $q->where(fn($q) => $q->where('user_code', $userCode)->orWhereNull('user_code'));
         $expenses = $q->latest('date')->latest('created_at')->get();
+        $total = $expenses->sum('amount');
 
-        $header = ['Tanggal', 'Kategori', 'Jumlah', 'Deskripsi', 'Sumber'];
-        $rows = $expenses->map(fn($e) => [
-            $e->date->format('Y-m-d'),
-            $e->category->name,
-            $e->amount,
-            $e->description ?? '',
-            $e->source,
+        $pdf = Pdf::loadView('expenses.pdf', compact('expenses', 'total', 'month', 'year', 'startDate', 'endDate'));
+
+        $filename = 'pengeluaran' . ($startDate && $endDate ? "-{$startDate}_{$endDate}" : "-{$month}-{$year}") . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function importCsv(Request $request)
+    {
+        $request->validate([
+            'csv' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
-        $csv = fopen('php://temp', 'r+');
-        fputcsv($csv, $header, ';');
-        foreach ($rows as $row) fputcsv($csv, $row, ';');
-        rewind($csv);
-        $content = stream_get_contents($csv);
-        fclose($csv);
+        $file = $request->file('csv');
+        $handle = fopen($file->getPathname(), 'r');
+        $header = fgetcsv($handle, 0, ';');
+        $categories = Category::all()->keyBy(fn($c) => strtolower($c->name));
+        $userCode = session('access_code');
+        $imported = 0;
 
-        return response($content, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="pengeluaran.csv"',
-        ]);
+        while (($row = fgetcsv($handle, 0, ';')) !== false) {
+            $data = array_combine($header, $row);
+            if (!$data || empty($data['Jumlah'])) continue;
+
+            $amount = (int) str_replace(['.', ' ', 'Rp'], '', $data['Jumlah'] ?? '0');
+            if ($amount <= 0) continue;
+
+            $categoryName = trim($data['Kategori'] ?? '');
+            $category = $categoryName
+                ? ($categories[strtolower($categoryName)] ?? Category::first())
+                : Category::first();
+            if (!$category) continue;
+
+            Expense::create([
+                'category_id' => $category->id,
+                'amount' => $amount,
+                'description' => trim($data['Deskripsi'] ?? '') ?: null,
+                'date' => $data['Tanggal'] ?? now()->toDateString(),
+                'source' => trim($data['Sumber'] ?? 'web') ?: 'web',
+                'user_code' => $userCode,
+            ]);
+
+            $imported++;
+        }
+
+        fclose($handle);
+
+        $msg = "Berhasil import {$imported} pengeluaran.";
+        return redirect()->back()->with('success', $msg);
     }
 }

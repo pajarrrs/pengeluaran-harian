@@ -25,7 +25,9 @@ Route::post('/logout', function () {
 Route::middleware('access.code')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('expenses', ExpenseController::class);
-    Route::get('/export/csv', [ExpenseController::class, 'exportCsv'])->name('export.csv');
+    Route::patch('/expenses/{expense}/inline', [ExpenseController::class, 'inlineUpdate'])->name('expenses.inline-update');
+    Route::get('/export/pdf', [ExpenseController::class, 'exportPdf'])->name('export.pdf');
+    Route::post('/import/csv', [ExpenseController::class, 'importCsv'])->name('import.csv');
     Route::resource('categories', CategoryController::class);
     Route::post('/push/test', [App\Http\Controllers\PushController::class, 'test'])->name('push.test');
 });
