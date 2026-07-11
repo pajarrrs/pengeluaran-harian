@@ -3,87 +3,98 @@
 
 @section('content')
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-        <h1 class="text-2xl font-bold">Dashboard</h1>
-        <div class="flex flex-wrap gap-2 items-center">
-            <form method="GET" class="flex flex-wrap gap-2 items-center">
-                <select name="month" class="border rounded px-2 py-1 text-sm">
-                    @foreach (range(1, 12) as $m)
-                        <option value="{{ $m }}" {{ (int)$m === (int)$month ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
-                    @endforeach
-                </select>
-                <select name="year" class="border rounded px-2 py-1 text-sm">
-                    @foreach (range(now()->year - 2, now()->year + 1) as $y)
-                        <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Filter</button>
-            </form>
-            {{-- <form method="POST" action="{{ route('push.test') }}">
-                @csrf
-                <button type="submit" class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">🔔 Test Push</button>
-            </form> --}}
+        <h1 class="text-2xl font-bold">💰 Dashboard</h1>
+        <form method="GET" class="flex flex-wrap gap-2 items-center">
+            <input type="date" name="start_date" value="{{ $startDate ?? '' }}" class="border rounded px-2 py-1 text-sm">
+            <input type="date" name="end_date" value="{{ $endDate ?? '' }}" class="border rounded px-2 py-1 text-sm">
+            <select name="month" class="border rounded px-2 py-1 text-sm">
+                @foreach (range(1, 12) as $m)
+                    <option value="{{ $m }}" {{ (int)$m === (int)$month ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
+                @endforeach
+            </select>
+            <select name="year" class="border rounded px-2 py-1 text-sm">
+                @foreach (range(now()->year - 2, now()->year + 1) as $y)
+                    <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Filter</button>
+            <a href="{{ route('export.csv', request()->query()) }}" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">CSV</a>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 text-center border-t-2 border-blue-500">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Hari Ini</p>
+            <p class="text-xl font-bold text-blue-600">Rp {{ number_format($todayTotal, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-400">{{ $todayCount }} transaksi</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center border-t-2 border-purple-500">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Minggu Ini</p>
+            <p class="text-xl font-bold text-purple-600">Rp {{ number_format($weekTotal, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-400">{{ $weekCount }} transaksi</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center border-t-2 border-green-500">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Bulan Ini</p>
+            <p class="text-xl font-bold text-green-600">Rp {{ number_format($total, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-400">{{ $count }} transaksi, avg Rp {{ number_format($avgPerDay, 0, ',', '.') }}/hari</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow p-4">
-            <p class="text-xs text-gray-500">Total Pengeluaran</p>
-            <p class="text-xl font-bold">Rp {{ number_format($total, 0, ',', '.') }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4">
-            <p class="text-xs text-gray-500">Transaksi</p>
-            <p class="text-xl font-bold">{{ $count }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4">
-            <p class="text-xs text-gray-500">Rata-rata / Hari</p>
-            <p class="text-xl font-bold">Rp {{ number_format($avgPerDay, 0, ',', '.') }}</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4">
-            <p class="text-xs text-gray-500">Tertinggi</p>
-            <p class="text-xl font-bold">@if ($highest) Rp {{ number_format($highest->amount, 0, ',', '.') }}@else - @endif</p>
-            @if ($highest)
-                <p class="text-xs text-gray-400">{{ $highest->category->emoji }} {{ $highest->category->name }} {{ $highest->description ? '— '.$highest->description : '' }}</p>
-            @endif
-        </div>
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h2 class="font-semibold mb-3">Transaksi Hari Ini</h2>
+        @forelse ($todayExpenses as $e)
+            <div class="flex items-center justify-between py-2 border-b last:border-0 text-sm">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span>{{ $e->category->emoji ?? '📌' }}</span>
+                    <span class="truncate">{{ $e->category->name }}</span>
+                    @if ($e->description)
+                        <span class="text-gray-400 truncate hidden sm:inline">— {{ $e->description }}</span>
+                    @endif
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="font-medium">Rp {{ number_format($e->amount, 0, ',', '.') }}</span>
+                    <span class="text-xs {{ $e->source === 'whatsapp' ? 'text-green-500' : ($e->source === 'telegram' ? 'text-purple-500' : 'text-blue-500') }}">{{ $e->source === 'whatsapp' ? 'WA' : ($e->source === 'telegram' ? 'Tele' : 'Web') }}</span>
+                </div>
+            </div>
+        @empty
+            <p class="text-gray-400 text-sm">Belum ada transaksi hari ini.</p>
+        @endforelse
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    @if ($budgetAlerts->isNotEmpty())
+        @foreach ($budgetAlerts as $cat)
+            @php $pct = round(($cat['total'] / $cat['budget']) * 100); @endphp
+            <div class="flex items-center gap-2 p-3 rounded-lg text-sm mb-2 {{ $pct >= 100 ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200' }}">
+                <span>{{ $cat['emoji'] }}</span>
+                <span class="flex-1">{{ $cat['name'] }} — Rp {{ number_format($cat['total'], 0, ',', '.') }} / Rp {{ number_format($cat['budget'], 0, ',', '.') }} ({{ $pct }}%)</span>
+                <span class="font-medium">{{ $pct >= 100 ? 'Over!' : 'Hampir' }}</span>
+            </div>
+        @endforeach
+    @endif
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="font-semibold mb-2">Per Kategori</h2>
-            <canvas id="pieChart" height="200"></canvas>
+            <h2 class="font-semibold mb-2 text-sm">Per Kategori</h2>
+            <canvas id="pieChart" height="180"></canvas>
         </div>
         <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="font-semibold mb-2">Total per Kategori</h2>
-            <canvas id="barChart" height="200"></canvas>
+            <h2 class="font-semibold mb-2 text-sm">Total per Kategori</h2>
+            <canvas id="barChart" height="180"></canvas>
         </div>
     </div>
 
     <div class="bg-white rounded-lg shadow p-4 mb-6">
         <h2 class="font-semibold mb-3">Rincian per Kategori</h2>
-
-        @if ($budgetAlerts->isNotEmpty())
-            <div class="mb-4 space-y-2">
-                @foreach ($budgetAlerts as $cat)
-                    @php $pct = round(($cat['total'] / $cat['budget']) * 100); @endphp
-                    <div class="flex items-center gap-2 p-2 rounded text-sm {{ $pct >= 100 ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700' }}">
-                        <span>{{ $cat['emoji'] }}</span>
-                        <span class="flex-1">{{ $cat['name'] }} — Rp {{ number_format($cat['total'], 0, ',', '.') }} / Rp {{ number_format($cat['budget'], 0, ',', '.') }} ({{ $pct }}%)</span>
-                        <span>{{ $pct >= 100 ? '⚠️ Over budget!' : '🔔 Hampir habis' }}</span>
-                    </div>
-                @endforeach
-            </div>
-        @endif
-
         @forelse ($perCategory as $cat)
             @if ($cat['total'] > 0)
-                    <div class="flex items-center justify-between py-2 border-b last:border-0">
-                        <div class="flex items-center gap-2">
-                            <span>{{ $cat['emoji'] }}</span>
-                            <span>{{ $cat['name'] }}</span>
-                            @if ($cat['budget'])
-                                <span class="text-xs text-gray-400">({{ round(($cat['total'] / max($cat['budget'], 1)) * 100) }}% budget)</span>
-                            @endif
-                        </div>
+                <div class="flex items-center justify-between py-2 border-b last:border-0">
+                    <div class="flex items-center gap-2">
+                        <span>{{ $cat['emoji'] }}</span>
+                        <span>{{ $cat['name'] }}</span>
+                        @if ($cat['budget'])
+                            <span class="text-xs text-gray-400">({{ round(($cat['total'] / max($cat['budget'], 1)) * 100) }}%)</span>
+                        @endif
+                    </div>
                     <div class="flex items-center gap-2">
                         <span class="font-medium">Rp {{ number_format($cat['total'], 0, ',', '.') }}</span>
                         <span style="background: {{ $cat['color'] }}" class="w-3 h-3 rounded-full inline-block"></span>

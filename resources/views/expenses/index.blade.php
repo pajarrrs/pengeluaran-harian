@@ -7,6 +7,8 @@
         <div class="flex flex-wrap gap-2 items-center">
             <form method="GET" class="flex flex-wrap gap-2 items-center">
                 <input type="search" name="search" placeholder="Cari deskripsi..." value="{{ $search ?? '' }}" class="border rounded px-2 py-1 text-sm w-36">
+                <input type="date" name="start_date" value="{{ $startDate ?? '' }}" class="border rounded px-2 py-1 text-sm">
+                <input type="date" name="end_date" value="{{ $endDate ?? '' }}" class="border rounded px-2 py-1 text-sm">
                 <select name="month" class="border rounded px-2 py-1 text-sm">
                     @foreach (range(1, 12) as $m)
                         <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>{{ DateTime::createFromFormat('!m', $m)->format('F') }}</option>
@@ -18,6 +20,7 @@
                     @endforeach
                 </select>
                 <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Filter</button>
+                <a href="{{ route('export.csv', request()->query()) }}" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Export</a>
             </form>
             <button onclick="toggleForm()" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">+ Tambah</button>
         </div>

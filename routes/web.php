@@ -25,6 +25,7 @@ Route::post('/logout', function () {
 Route::middleware('access.code')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('expenses', ExpenseController::class);
+    Route::get('/export/csv', [ExpenseController::class, 'exportCsv'])->name('export.csv');
     Route::resource('categories', CategoryController::class);
     Route::post('/push/test', [App\Http\Controllers\PushController::class, 'test'])->name('push.test');
 });

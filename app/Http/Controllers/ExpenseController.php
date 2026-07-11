@@ -11,14 +11,19 @@ class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
         $month = $request->get('month', now()->month);
         $year = $request->get('year', now()->year);
         $search = $request->get('search');
         $userCode = session('access_code');
 
-        $base = Expense::with('category')
-            ->whereMonth('date', $month)
-            ->whereYear('date', $year);
+        $base = Expense::with('category');
+        if ($startDate && $endDate) {
+            $base->whereBetween('date', [$startDate, $endDate]);
+        } else {
+            $base->whereMonth('date', $month)->whereYear('date', $year);
+        }
         if ($userCode) $base->where(fn($q) => $q->where('user_code', $userCode)->orWhereNull('user_code'));
 
         $expenses = (clone $base)
@@ -33,7 +38,7 @@ class ExpenseController extends Controller
 
         $categories = Category::all();
 
-        return view('expenses.index', compact('expenses', 'categories', 'total', 'month', 'year', 'search'));
+        return view('expenses.index', compact('expenses', 'categories', 'total', 'month', 'year', 'search', 'startDate', 'endDate'));
     }
 
     public function store(Request $request, PushNotificationService $push)
@@ -84,5 +89,44 @@ class ExpenseController extends Controller
         $expense->delete();
 
         return redirect()->back()->with('success', 'Pengeluaran berhasil dihapus.');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', now()->year);
+        $userCode = session('access_code');
+
+        $q = Expense::with('category');
+        if ($startDate && $endDate) {
+            $q->whereBetween('date', [$startDate, $endDate]);
+        } else {
+            $q->whereMonth('date', $month)->whereYear('date', $year);
+        }
+        if ($userCode) $q->where(fn($q) => $q->where('user_code', $userCode)->orWhereNull('user_code'));
+        $expenses = $q->latest('date')->latest('created_at')->get();
+
+        $header = ['Tanggal', 'Kategori', 'Jumlah', 'Deskripsi', 'Sumber'];
+        $rows = $expenses->map(fn($e) => [
+            $e->date->format('Y-m-d'),
+            $e->category->name,
+            $e->amount,
+            $e->description ?? '',
+            $e->source,
+        ]);
+
+        $csv = fopen('php://temp', 'r+');
+        fputcsv($csv, $header, ';');
+        foreach ($rows as $row) fputcsv($csv, $row, ';');
+        rewind($csv);
+        $content = stream_get_contents($csv);
+        fclose($csv);
+
+        return response($content, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="pengeluaran.csv"',
+        ]);
     }
 }
