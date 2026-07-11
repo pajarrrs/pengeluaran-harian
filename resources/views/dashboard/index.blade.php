@@ -18,10 +18,10 @@
                 </select>
                 <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Filter</button>
             </form>
-            <form method="POST" action="{{ route('push.test') }}">
+            {{-- <form method="POST" action="{{ route('push.test') }}">
                 @csrf
                 <button type="submit" class="bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700">🔔 Test Push</button>
-            </form>
+            </form> --}}
         </div>
     </div>
 

@@ -12,8 +12,10 @@ class DashboardController extends Controller
     {
         $month = (int) $request->get('month', now()->month);
         $year = (int) $request->get('year', now()->year);
-        $dateFilter = function ($q) use ($month, $year) {
+        $userCode = session('access_code');
+        $dateFilter = function ($q) use ($month, $year, $userCode) {
             $q->whereMonth('date', $month)->whereYear('date', $year);
+            if ($userCode) $q->where(fn($q) => $q->where('user_code', $userCode)->orWhereNull('user_code'));
         };
 
         $total = Expense::where($dateFilter)->sum('amount');
