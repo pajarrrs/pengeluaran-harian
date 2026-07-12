@@ -24,9 +24,7 @@
                 @endforeach
             </select>
             <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700">Filter</button>
-            <a href="{{ route('export.pdf', request()->query()) }}" class="text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-lg text-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300">
-                PDF
-            </a>
+            <a href="{{ route('export.pdf', request()->query()) }}" class="text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-lg text-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">PDF</a>
         </form>
     </div>
 
@@ -44,7 +42,7 @@
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5">
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Bulan Ini</p>
             <p class="text-lg font-semibold">Rp {{ number_format($total, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400">{{ $count }} transaksi · rata-rata Rp {{ number_format($avgPerDay, 0, ',', '.') }}/hari</p>
+            <p class="text-xs text-gray-400">{{ $count }} transaksi &middot; rata-rata Rp {{ number_format($avgPerDay, 0, ',', '.') }}/hari</p>
         </div>
     </div>
 

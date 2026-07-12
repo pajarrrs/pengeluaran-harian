@@ -13,21 +13,21 @@ class DailySummaryMail extends Mailable
     use Queueable, SerializesModels;
 
     public function __construct(
-        public string $summary,
-        public ?string $budgetAlerts = null,
+        public array $summary,
+        public array $budgetAlerts = [],
     ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '📊 Ringkasan Pengeluaran — ' . now()->format('d M Y'),
+            subject: 'Ringkasan Pengeluaran — ' . now()->format('d M Y'),
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.daily-summary',
+            html: 'emails.daily-summary',
         );
     }
 }

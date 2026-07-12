@@ -12,23 +12,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <style>
+        [x-cloak] { display: none !important; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .animate-in { animation: fadeIn 0.3s ease-out both; }
         body { padding-bottom: env(safe-area-inset-bottom); }
     </style>
     @stack('styles')
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 antialiased transition-colors">
+<body x-data="{ openExport: false }" class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 antialiased transition-colors">
     {{-- Desktop nav --}}
     <nav class="hidden md:flex bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 transition-colors">
         <div class="max-w-5xl mx-auto w-full px-4 h-12 flex items-center justify-between">
-            <a href="{{ route('dashboard') }}" class="font-semibold text-base flex items-center gap-1.5">
-                <span>💰</span> Pengeluaran Harian
-            </a>
+            <a href="{{ route('dashboard') }}" class="font-semibold text-base">Pengeluaran Harian</a>
             <div class="flex items-center gap-0.5 text-sm">
                 <a href="{{ route('dashboard') }}" class="px-3 py-1.5 rounded-md {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}">Dashboard</a>
                 <a href="{{ route('expenses.index') }}" class="px-3 py-1.5 rounded-md {{ request()->routeIs('expenses.*') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}">Pengeluaran</a>
                 <a href="{{ route('categories.index') }}" class="px-3 py-1.5 rounded-md {{ request()->routeIs('categories.*') ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}">Kategori</a>
+                <button @click="openExport = true" x-data class="px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">PDF</button>
                 <form method="POST" action="{{ route('logout') }}" class="inline ml-1">
                     @csrf
                     <button class="px-3 py-1.5 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400">Keluar</button>
@@ -40,27 +40,55 @@
     {{-- Mobile bottom nav --}}
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50 transition-colors" style="padding-bottom: env(safe-area-inset-bottom)">
         <div class="flex items-center justify-around py-0.5">
-            <a href="{{ route('dashboard') }}" class="flex flex-col items-center gap-0 px-2 py-1.5 rounded-md {{ request()->routeIs('dashboard') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <a href="{{ route('dashboard') }}" class="flex flex-col items-center px-2 py-1.5 rounded-md {{ request()->routeIs('dashboard') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">
                 <span class="text-[10px] font-medium">Dashboard</span>
             </a>
-            <a href="{{ route('expenses.index') }}" class="flex flex-col items-center gap-0 px-2 py-1.5 rounded-md {{ request()->routeIs('expenses.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            <a href="{{ route('expenses.index') }}" class="flex flex-col items-center px-2 py-1.5 rounded-md {{ request()->routeIs('expenses.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">
                 <span class="text-[10px] font-medium">Pengeluaran</span>
             </a>
-            <a href="{{ route('categories.index') }}" class="flex flex-col items-center gap-0 px-2 py-1.5 rounded-md {{ request()->routeIs('categories.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <a href="{{ route('categories.index') }}" class="flex flex-col items-center px-2 py-1.5 rounded-md {{ request()->routeIs('categories.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">
                 <span class="text-[10px] font-medium">Kategori</span>
             </a>
+            <button @click="openExport = true" class="flex flex-col items-center px-2 py-1.5 rounded-md text-gray-500 dark:text-gray-400">
+                <span class="text-[10px] font-medium">PDF</span>
+            </button>
             <form method="POST" action="{{ route('logout') }}" class="inline">
                 @csrf
-                <button type="submit" class="flex flex-col items-center gap-0 px-2 py-1.5 rounded-md text-gray-500 dark:text-gray-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <button type="submit" class="flex flex-col items-center px-2 py-1.5 rounded-md text-gray-500 dark:text-gray-400">
                     <span class="text-[10px] font-medium">Keluar</span>
                 </button>
             </form>
         </div>
     </nav>
+
+    {{-- Export PDF Modal --}}
+    <div x-show="openExport" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30" @click="openExport = false" x-transition>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 w-full max-w-sm p-5" @click.stop>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-semibold">Export PDF</h2>
+                <button @click="openExport = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">&times;</button>
+            </div>
+            <form method="GET" action="{{ route('export.pdf') }}" class="space-y-3">
+                <div class="flex gap-1.5 flex-wrap">
+                    <button type="button" @click="$refs.sd.value='{{ now()->toDateString() }}'; $refs.ed.value='{{ now()->toDateString() }}'" class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Hari ini</button>
+                    <button type="button" @click="$refs.sd.value='{{ now()->startOfWeek()->toDateString() }}'; $refs.ed.value='{{ now()->toDateString() }}'" class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Minggu ini</button>
+                    <button type="button" @click="$refs.sd.value='{{ now()->startOfMonth()->toDateString() }}'; $refs.ed.value='{{ now()->toDateString() }}'" class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Bulan ini</button>
+                    <button type="button" @click="$refs.sd.value=''; $refs.ed.value=''" class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Semua</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-0.5">Dari</label>
+                        <input x-ref="sd" type="date" name="start_date" class="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-2 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-0.5">Sampai</label>
+                        <input x-ref="ed" type="date" name="end_date" class="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-2 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 outline-none">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Download PDF</button>
+            </form>
+        </div>
+    </div>
 
     {{-- Main content --}}
     <main class="max-w-5xl mx-auto px-4 py-5 pb-24 md:pb-5">

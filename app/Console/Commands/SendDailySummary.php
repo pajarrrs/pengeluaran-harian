@@ -21,8 +21,8 @@ class SendDailySummary extends Command
             return 1;
         }
 
-        $summary = $wa->getDailySummary();
-        $alerts = $wa->getBudgetAlerts();
+        $summary = $wa->getDailySummaryData();
+        $alerts = $wa->getBudgetAlertsData();
 
         Mail::to($email)->send(new DailySummaryMail(
             summary: $summary,

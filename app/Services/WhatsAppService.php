@@ -38,7 +38,6 @@ class WhatsAppService
     {
         $lower = trim(mb_strtolower($text));
 
-        // "hapus terakhir" or "hapus"
         if (preg_match('/^hapus(?:\s+terakhir)?$/', $lower)) {
             $expense = Expense::where('wa_id', $waId)->latest()->first();
             if (!$expense) {
@@ -50,7 +49,6 @@ class WhatsAppService
             return ['type' => 'reply', 'message' => "✅ Berhasil dihapus!\n{$detail}"];
         }
 
-        // "edit terakhir jadi 50000"
         if (preg_match('/^edit\s+terakhir\s+jadi\s+(\d[\d.,]*)/', $lower, $m)) {
             $amount = (int) str_replace(['.', ','], '', $m[1]);
             $expense = Expense::where('wa_id', $waId)->latest()->first();
@@ -132,5 +130,60 @@ class WhatsAppService
         }
 
         return implode("\n", $lines);
+    }
+
+    public function getDailySummaryData(): array
+    {
+        $today = now()->toDateString();
+        $month = now()->month;
+        $year = now()->year;
+
+        $todayTotal = Expense::whereDate('date', $today)->sum('amount');
+        $todayCount = Expense::whereDate('date', $today)->count();
+        $monthTotal = Expense::whereMonth('date', $month)->whereYear('date', $year)->sum('amount');
+
+        $categories = Category::with(['expenses' => fn($q) => $q->whereDate('date', $today)])
+            ->get()
+            ->map(fn($c) => [
+                'emoji' => $c->emoji,
+                'name' => $c->name,
+                'color' => $c->color,
+                'total' => $c->expenses->sum('amount'),
+            ])
+            ->filter(fn($c) => $c['total'] > 0)
+            ->values()
+            ->toArray();
+
+        return [
+            'date' => now()->format('d M Y'),
+            'todayTotal' => $todayTotal,
+            'todayCount' => $todayCount,
+            'monthTotal' => $monthTotal,
+            'categories' => $categories,
+        ];
+    }
+
+    public function getBudgetAlertsData(): array
+    {
+        $month = now()->month;
+        $year = now()->year;
+
+        return Category::with(['expenses' => fn($q) => $q->whereMonth('date', $month)->whereYear('date', $year)])
+            ->get()
+            ->filter(function ($c) {
+                if (!$c->budget) return false;
+                $total = $c->expenses->sum('amount');
+                return $total >= $c->budget * 0.8;
+            })
+            ->map(fn($c) => [
+                'emoji' => $c->emoji,
+                'name' => $c->name,
+                'color' => $c->color,
+                'total' => $c->expenses->sum('amount'),
+                'budget' => $c->budget,
+                'percentage' => round(($c->expenses->sum('amount') / $c->budget) * 100),
+            ])
+            ->values()
+            ->toArray();
     }
 }

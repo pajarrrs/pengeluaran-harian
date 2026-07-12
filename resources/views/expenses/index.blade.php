@@ -20,9 +20,7 @@
                     @endforeach
                 </select>
                 <button type="submit" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700">Filter</button>
-                <a href="{{ route('export.pdf', request()->query()) }}" class="text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-lg text-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    PDF
-                </a>
+                <a href="{{ route('export.pdf', request()->query()) }}" class="text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-lg text-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">PDF</a>
             </form>
             <button onclick="toggleForm('createForm')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-emerald-700">+ Tambah</button>
             <button onclick="toggleForm('importForm')" class="text-gray-500 dark:text-gray-400 px-3 py-1.5 rounded-lg text-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Import</button>
@@ -77,7 +75,6 @@
         </form>
     </div>
 
-    {{-- Desktop table --}}
     <div class="hidden md:block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
         <table class="w-full text-sm">
             <thead>
@@ -130,7 +127,6 @@
         </table>
     </div>
 
-    {{-- Mobile cards --}}
     <div class="md:hidden space-y-2.5">
         @forelse ($expenses as $e)
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3.5 border-l-[3px]" style="border-left-color: {{ $e->category->color ?? '#d1d5db' }}">
