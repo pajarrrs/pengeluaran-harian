@@ -49,7 +49,7 @@
             <input type="date" name="date" value="{{ now()->toDateString() }}" class="border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-2 text-sm bg-white dark:bg-gray-900 dark:text-gray-300 outline-none focus:border-blue-500">
             <div class="md:col-span-4 flex flex-wrap items-center gap-3">
                 <label class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-                    <input type="checkbox" onchange="document.getElementById('intervalField').classList.toggle('hidden', !this.checked)">
+                    <input type="checkbox" onchange="var f=document.getElementById('intervalField');var s=f.querySelector('select');f.classList.toggle('hidden',!this.checked);s.disabled=!this.checked">
                     <span>Berulang</span>
                 </label>
                 <div id="intervalField" class="hidden flex items-center gap-1.5">
@@ -173,11 +173,14 @@
 function toggleForm(id) {
     document.getElementById(id).classList.toggle('hidden');
 }
-document.querySelector('[name="recurring_interval"]').closest('form').addEventListener('submit', function() {
-    const input = document.createElement('input');
+document.getElementById('createForm').querySelector('form').addEventListener('submit', function() {
+    var cb = this.querySelector('[type="checkbox"]');
+    if (!cb) return;
+    var isRecurring = !document.getElementById('intervalField').classList.contains('hidden') ? '1' : '0';
+    var input = document.createElement('input');
     input.type = 'hidden';
     input.name = 'is_recurring';
-    input.value = document.getElementById('intervalField').classList.contains('hidden') ? '0' : '1';
+    input.value = isRecurring;
     this.appendChild(input);
 });
 </script>
