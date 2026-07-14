@@ -14,6 +14,14 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium mb-1">Tipe</label>
+                <select name="type" class="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-2 text-sm bg-white dark:bg-gray-900 dark:text-gray-300 outline-none focus:border-blue-500">
+                    <option value="expense" {{ $category->type === 'expense' ? 'selected' : '' }}>Pengeluaran</option>
+                    <option value="income" {{ $category->type === 'income' ? 'selected' : '' }}>Pemasukan</option>
+                </select>
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium mb-1">Emoji</label>
                 <input type="text" name="emoji" value="{{ $category->emoji }}" class="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-2 text-sm bg-white dark:bg-gray-900 dark:text-gray-300 outline-none focus:border-blue-500">
             </div>

@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Expense extends Model
 {
-    protected $fillable = ['category_id', 'amount', 'description', 'date', 'source', 'wa_id', 'user_code'];
+    protected $fillable = [
+        'category_id', 'amount', 'description', 'date', 'source', 'wa_id', 'user_code',
+        'is_recurring', 'recurring_interval', 'next_date', 'parent_id'
+    ];
 
     protected function casts(): array
     {

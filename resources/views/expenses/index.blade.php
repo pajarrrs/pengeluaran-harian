@@ -33,7 +33,7 @@
     </div>
 
     <div id="createForm" class="hidden animate-in bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4">
-        <h2 class="text-sm font-medium mb-3">Tambah Pengeluaran</h2>
+        <h2 class="text-sm font-medium mb-3">Tambah Transaksi</h2>
         <form method="POST" action="{{ route('expenses.store') }}" class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
             @csrf
             <select name="category_id" required class="border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-2 text-sm bg-white dark:bg-gray-900 dark:text-gray-300 outline-none focus:border-blue-500">
@@ -96,10 +96,12 @@
                         <td class="px-4 py-2.5 text-right">
                             <span x-data="{ editing: false, amount: '{{ $e->amount }}' }">
                                 <template x-if="!editing">
-                                    <span @click="editing = true; $nextTick(() => { $refs.input.focus(); $refs.input.select(); })" class="font-medium cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950 rounded px-1 -mx-1">Rp {{ number_format($e->amount, 0, ',', '.') }}</span>
+                                    <span @click="editing = true; $nextTick(() => { $refs.input.focus(); $refs.input.select(); })" class="font-medium cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950 rounded px-1 -mx-1 {{ $e->category->type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                                        {{ $e->category->type === 'income' ? '+' : '-' }} Rp {{ number_format($e->amount, 0, ',', '.') }}
+                                    </span>
                                 </template>
                                 <template x-if="editing">
-                                    <form @submit.prevent="fetch('{{ route('expenses.inline-update', $e) }}', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify({ amount: $refs.input.value }) }).then(r => r.json()).then(d => { if(d.success) { amount = $refs.input.value; editing = false; } })" class="inline">
+                                    <form @submit.prevent="fetch('{{ route('expenses.inline-update', $e) }}', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify({ amount: $refs.input.value }) }).then(r => r.json()).then(d => { if(d.success) { amount = $refs.input.value; editing = false; window.location.reload(); } })" class="inline">
                                         @method('PATCH')
                                         @csrf
                                         <input x-ref="input" type="number" :value="amount" @click.stop @keydown.escape="editing = false" @click.away="editing = false" class="w-24 border border-blue-400 rounded px-1.5 py-0.5 text-sm font-medium text-right dark:bg-gray-700 dark:text-gray-100 dark:border-blue-500 outline-none">
@@ -139,7 +141,9 @@
                 </div>
                 <div class="flex items-end justify-between">
                     <div>
-                        <p class="text-base font-semibold">Rp {{ number_format($e->amount, 0, ',', '.') }}</p>
+                        <p class="text-base font-semibold {{ $e->category->type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
+                            {{ $e->category->type === 'income' ? '+' : '-' }} Rp {{ number_format($e->amount, 0, ',', '.') }}
+                        </p>
                         @if ($e->description)
                             <p class="text-xs text-gray-500 mt-0.5">{{ $e->description }}</p>
                         @endif
