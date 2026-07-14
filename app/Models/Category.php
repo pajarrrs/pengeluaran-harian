@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'type', 'emoji', 'color', 'budget', 'is_default'];
+    protected $fillable = ['name', 'emoji', 'color', 'budget', 'is_default'];
 
     protected function casts(): array
     {

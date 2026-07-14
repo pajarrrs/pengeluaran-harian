@@ -88,21 +88,7 @@ class ExpenseController extends Controller
             'amount' => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
             'date' => 'required|date',
-            'is_recurring' => 'nullable|boolean',
-            'recurring_interval' => 'nullable|required_if:is_recurring,1|integer|min:1|max:365',
         ]);
-
-        $isRecurring = $validated['is_recurring'] ?? false;
-        unset($validated['is_recurring']);
-        if ($isRecurring) {
-            $validated['is_recurring'] = true;
-            $interval = $validated['recurring_interval'];
-            $validated['next_date'] = now()->parse($validated['date'])->addDays($interval)->toDateString();
-        } else {
-            $validated['is_recurring'] = false;
-            $validated['recurring_interval'] = null;
-            $validated['next_date'] = null;
-        }
 
         $expense->update($validated);
 

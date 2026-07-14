@@ -17,7 +17,6 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:categories,name',
-            'type' => 'required|in:expense,income',
             'emoji' => 'nullable|string|max:10',
             'color' => 'nullable|string|max:7',
             'budget' => 'nullable|integer|min:0',
@@ -37,7 +36,6 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
-            'type' => 'required|in:expense,income',
             'emoji' => 'nullable|string|max:10',
             'color' => 'nullable|string|max:7',
             'budget' => 'nullable|integer|min:0',

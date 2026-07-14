@@ -60,18 +60,6 @@ class WhatsAppService
             return ['type' => 'reply', 'message' => "✅ Diubah jadi Rp " . number_format($amount, 0, ',', '.') . "\n{$cat->emoji} {$cat->name}" . ($expense->description ? " — {$expense->description}" : '')];
         }
 
-        if (preg_match('/^\/link\s+(\d+)$/', $lower, $m)) {
-            $code = $m[1];
-            if (!\App\Http\Middleware\AccessCode::isValid($code)) {
-                return ['type' => 'reply', 'message' => "❌ Kode akses tidak valid."];
-            }
-            \App\Models\WaUser::updateOrCreate(
-                ['wa_id' => $waId],
-                ['access_code' => $code]
-            );
-            return ['type' => 'reply', 'message' => "✅ Akun WhatsApp berhasil disambungkan dengan kode akses keluarga!"];
-        }
-
         return null;
     }
 

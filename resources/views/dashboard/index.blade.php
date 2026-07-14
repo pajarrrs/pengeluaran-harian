@@ -30,19 +30,19 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Pemasukan Bulan Ini</p>
-            <p class="text-lg font-semibold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($incomeTotal, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400">Total pendapatan bulan ini</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Hari Ini</p>
+            <p class="text-lg font-semibold">Rp {{ number_format($todayTotal, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-400">{{ $todayCount }} transaksi</p>
         </div>
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Pengeluaran Bulan Ini</p>
-            <p class="text-lg font-semibold text-rose-600 dark:text-rose-400">Rp {{ number_format($expenseTotal, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400">{{ $count }} transaksi &middot; avg Rp {{ number_format($avgPerDay, 0, ',', '.') }}/hari</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Minggu Ini</p>
+            <p class="text-lg font-semibold">Rp {{ number_format($weekTotal, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-400">{{ $weekCount }} transaksi</p>
         </div>
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5">
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Sisa Saldo</p>
-            <p class="text-lg font-semibold {{ $saldo < 0 ? 'text-red-500' : 'text-blue-600 dark:text-blue-400' }}">Rp {{ number_format($saldo, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400">Selisih pemasukan dan pengeluaran</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Bulan Ini</p>
+            <p class="text-lg font-semibold">Rp {{ number_format($total, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-400">{{ $count }} transaksi &middot; rata-rata Rp {{ number_format($avgPerDay, 0, ',', '.') }}/hari</p>
         </div>
     </div>
 
@@ -57,9 +57,7 @@
                         <span class="text-gray-400 truncate hidden sm:inline">— {{ $e->description }}</span>
                     @endif
                 </div>
-                <span class="font-medium shrink-0 {{ $e->category->type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
-                    {{ $e->category->type === 'income' ? '+' : '-' }} Rp {{ number_format($e->amount, 0, ',', '.') }}
-                </span>
+                <span class="font-medium shrink-0">Rp {{ number_format($e->amount, 0, ',', '.') }}</span>
             </div>
         @empty
             <p class="text-gray-400 text-sm py-1">Belum ada transaksi hari ini.</p>
@@ -116,9 +114,7 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="font-medium {{ $cat['type'] === 'income' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
-                            {{ $cat['type'] === 'income' ? '+' : '-' }} Rp {{ number_format($cat['total'], 0, ',', '.') }}
-                        </span>
+                        <span class="font-medium">Rp {{ number_format($cat['total'], 0, ',', '.') }}</span>
                         <span style="background: {{ $cat['color'] ?? '#d1d5db' }}" class="w-2.5 h-2.5 rounded-full inline-block"></span>
                     </div>
                 </div>
@@ -140,9 +136,7 @@
                     @endif
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                    <span class="font-medium {{ $e->category->type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : '' }}">
-                        {{ $e->category->type === 'income' ? '+' : '-' }} Rp {{ number_format($e->amount, 0, ',', '.') }}
-                    </span>
+                    <span class="font-medium">Rp {{ number_format($e->amount, 0, ',', '.') }}</span>
                     <span class="text-[10px] px-1.5 py-0.5 rounded font-medium {{ $e->source === 'whatsapp' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' : ($e->source === 'telegram' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400') }}">{{ $e->source === 'whatsapp' ? 'WA' : ($e->source === 'telegram' ? 'Tele' : 'Web') }}</span>
                 </div>
             </div>
